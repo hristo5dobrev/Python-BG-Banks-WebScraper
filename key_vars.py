@@ -32,7 +32,7 @@ final_report_year = datetime.datetime.now().year
 desired_text_results_page = "Резултати"
 # Supporting files paths
 parsed_files_fpath = "supporting_files/parsed-files.csv"
-pdf_links_fpath = "supporting_files/df_downloads_links.csv"
+pdf_links_fpath = "supporting_files/pdf_downloads_links.csv"
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
 articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"
