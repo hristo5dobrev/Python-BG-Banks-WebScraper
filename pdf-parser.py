@@ -3,11 +3,20 @@ import re
 import PyPDF2
 import datetime
 import pandas as pd
-from key_vars import bank, download_filepath, parsed_files_fpath, keywords, pdf_links_fpath
+from key_vars import download_filepath, parsed_files_fpath, keywords, pdf_links_fpath
 
 
 # Script to parse downloaded pdf-s
 # Searching for a set of key words within and returning associated information
+
+# Bank specific var- Choose bank for which to search through pdf reports
+# bank = "unicredit"
+bank = "ubb"
+
+# Outputs fpaths
+records_fname = f"outputs/recorded_matches_{bank}.csv"
+# Downloaded reports are in separate folder wrt bank
+download_filepath = download_filepath + bank + "/"
 
 # Check out files in location
 files = os.listdir(download_filepath)
