@@ -15,10 +15,17 @@ from selenium.webdriver.support.ui import Select
 #from selenium.common.exceptions import ElementClickInterceptedException
 # User defined function and vars
 from supporting_functions import set_chrome_options
-from key_vars import keywords, bank_news_url, earliest_report_year, final_report_year, articles_output_fpath
+from key_vars import keywords, earliest_report_year, final_report_year
 
 
 # News/Publications Search- Unicredit
+
+# Bank specific vars
+bank = "unicredit"
+bank_news_url = "https://www.unicreditbulbank.bg/bg/za-nas/media/novini/"
+# Outputs fpaths
+articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"
+
 
 # Open chrome driver
 driver = webdriver.Chrome(options = set_chrome_options())

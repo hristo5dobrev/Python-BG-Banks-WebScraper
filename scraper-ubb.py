@@ -23,7 +23,6 @@ from key_vars import download_filepath, earliest_report_year, final_report_year,
 # Bank specific vars
 bank = "ubb"
 bank_url = "https://www.ubb.bg/en/about/reports"
-bank_news_url = "https://www.ubb.bg/en/news"
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
 articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"

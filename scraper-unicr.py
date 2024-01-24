@@ -20,15 +20,13 @@ from key_vars import download_filepath, earliest_report_year, final_report_year,
 
 # Scrape- Unicredit Bulbank
 
-# Unicredit vars - DONE
+# Bank specific vars
 bank = "unicredit"
 bank_url = "https://www.unicreditbulbank.bg/bg/individualni-klienti/"
-bank_news_url = "https://www.unicreditbulbank.bg/bg/za-nas/media/novini/"
 # Unicredit specific- used to navigate to results webpage
 desired_text_results_page = "Резултати"
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
-articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"
 # Download reports in separate folder wrt bank
 download_filepath = download_filepath + bank + "/"
 
