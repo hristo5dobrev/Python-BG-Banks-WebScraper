@@ -22,9 +22,11 @@ from key_vars import keywords, earliest_report_year, final_report_year
 
 # Bank specific vars
 bank = "ubb"
+# NOTE- we will use search box in website's menu for efficiency as no keyword searchbox for news only
+# the aforementioned searchbox applies an even wider search than solely news
 bank_news_url = "https://www.ubb.bg/en/news"
 # Outputs fpaths
-articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"
+results_output_fpath = f"outputs/search_results_{bank}.csv"
 
 # Open chrome driver
 driver = webdriver.Chrome(options = set_chrome_options())
@@ -33,18 +35,18 @@ driver = webdriver.Chrome(options = set_chrome_options())
 driver.get(bank_news_url)
 time.sleep(3)
 
+# Decline cookies
+cookies_btn = driver.find_element(By.XPATH, "//*[@id='CybotCookiebotDialogBodyButtonDecline']")
+cookies_btn.click()
+time.sleep(1)
+
 #  Search in media publications with keywords
 
-# Noting alt search paths
-# "/html/body/div[2]/div/div[1]/div/div/form/fieldset/div/div[2]/input"
-# search_btn = driver.find_element(By.CLASS_NAME, "btn btn-primary search-btn")
-# "//*[@id="news-search-form"]/input"
-
-article_titles = []
-article_summaries = []
-article_dates = []
-article_hrefs = []
+result_titles = []
+result_dates = []
+result_hrefs = []
 keyword_list = []
+
 
 for i in range(0,len(keywords)):
 
@@ -52,15 +54,28 @@ for i in range(0,len(keywords)):
 
     # Log keyword being used
     print(f"Keyword -> {keyword}----------------------------------")
+                                                
+    # Open nav bar to enable search box
+    if i == 0:
+        nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
+    else:
+        nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[3]")
+        
+    nav_btn.click()
+
+    time.sleep(2)
 
     # Identify webelements for searching (each loop to avoid stale state)
-    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='id_keywords']")
-    #//*[@id="id_keywords"]
-    if i == 0:
-        search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/input")
-    else:
-        search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/span/button")
-        keyword_search_webel.clear()
+    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='search-input']")
+    search_btn = driver.find_element(By.XPATH, "//*/button[@type='submit']/img")
+    #search_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[5]/div/div[2]/div/form/div/div/button/img")
+    
+    # #//*[@id="id_keywords"]
+    # if i == 0:
+    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/input")
+    # else:
+    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/span/button")
+    #     keyword_search_webel.clear()
 
     # Input keyword
     keyword_search_webel.click()
@@ -69,125 +84,72 @@ for i in range(0,len(keywords)):
     search_btn.click()
 
     # Allow time for the search
-    time.sleep(5)
+    time.sleep(7)
+
+    # Get number of hits
+    n_results = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/p")
+    n_results = n_results.get_attribute("innerHTML")
+    n_results = n_results[len(n_results)-1]
+    n_results = int(n_results)
+
+    if n_results == 0:
+        continue
+
+    print(f"Number of search results found -> {n_results}----------------------------------")
 
 
-    # Check out visible articles
-    visible_articles = driver.find_elements(By.XPATH, "//*[@id='news_list']/div")
-    # Returns 0 if no hits
-    n_visible_articles = len(visible_articles)
+    for i in range(1, n_results+1):
 
-    #n_articles = 0
+        # Set xpath to access result info accordingly
+        category_xpath = f"/html/body/div[3]/div[2]/div/div[2]/div/div/div[{i}]/a[1]"
+        title_xpath = f"/html/body/div[3]/div[2]/div/div[2]/div/div/div[{i}]/a[2]"
 
-    # Check if all articles visible, if not get total
-    try:
-        # Identify show more webelement
-        show_more_webel = driver.find_element(By.XPATH, "//*[@id='main-id']/div[2]/div/div[2]/p/a")
-        show_more_UB_webel = driver.find_element(By.XPATH, '//*[@id="main-id"]/div[2]/div/div[2]/p/a/span[2]')
-        all_visible = False
-    except Exception as e:
-        all_visible = True
-        #print("Keyword generated too large number of hits.")
+        # Locate webels
+        category_webel = driver.find_element(By.XPATH, category_xpath)
+        title_webel = driver.find_element(By.XPATH, title_xpath)
 
-    if not all_visible:
-        # Identify number of all articles
-        n_hidden_articles = int(show_more_UB_webel.get_attribute("innerHTML"))
-        n_articles = n_visible_articles + n_hidden_articles
+        # Get title, category, href, date
+        category = category_webel.get_attribute("innerHTML").lower()
+        title = title_webel.get_attribute("innerHTML")
+        result_href = title_webel.get_attribute("href")
+        date = "NA"
 
-        if n_articles > 1000:
-            # too many hits, bogus search
-            print(f"Number of articles found -> {n_articles}----------------------------------")
-            print("NOTE!!! Too many hits, search engine issue assumed!!!")
+        # Exclude result if obviously wrong (Office Move Notif)
+        if "address change" in title:
             continue
 
-        # Identify n times to click on show more
-        n_click_show_more = math.ceil(n_hidden_articles/10)
+        # Check if link still live
+        search_url = driver.current_url
+        title_webel.click()
+        time.sleep(3)
+        current_url = driver.current_url
 
-        for i in range(0, n_click_show_more):
-            # Relocate show more button
-            show_more_webel = driver.find_element(By.XPATH, "//*[@id='main-id']/div[2]/div/div[2]/p/a")
-            # Scroll to bottom to avoid click intercept error with cookies bar
-            driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-            # Click to show more
-            show_more_webel.click()
-            # Wait to give time to load
-            time.sleep(11)
-    else:
-        # Only artivles are visible ones
-        n_articles = len(visible_articles)
+        # If no change in URL skip result as no longer available
+        if current_url == search_url:
+            continue
+        
+        # Get date of publishing (if news, else not available)
+        if category == "news":
+            date = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div/div/div[2]/p/span").get_attribute("innerHTML")
 
-
-    print(f"Number of articles found -> {n_articles}----------------------------------")
-
-
-    # //*[@id="news_list"]/div[1]/div/div[2]/h2/a
-    # //*[@id="news_list"]/div[2]/div/div[2]/h2/a
-    # //*[@id="news_list"]/div[17]/div/div/h2/a
-    # //*[@id="news_list"]/div[18]/div/div/h2/a
-
-    for i in range(1, n_articles+1):
-
-        # Check if article is with pic or not (extra div container when with pic)
-        article_webel_n_divs = len(driver.find_elements(By.XPATH, f"//*[@id='news_list']/div[{i}]/div/div"))
-        # Set xpath to scrape article info accordingly
-        if article_webel_n_divs == 2:
-            # Article with image and text summary
-            title_xpath = f"//*[@id='news_list']/div[{i}]/div/div[2]/h2/a"
-            date_xpath = f"//*[@id='news_list']/div[{i}]/div/div[2]/div[2]/time"
-            summary_xpath = f"//*[@id='news_list']/div[{i}]/div/div[2]/p"
-        elif article_webel_n_divs == 1:
-            #Article with text content summary only
-            title_xpath = f"//*[@id='news_list']/div[{i}]/div/div/h2/a"
-            date_xpath = f"//*[@id='news_list']/div[{i}]/div/div/div[2]/time"
-            summary_xpath = f"//*[@id='news_list']/div[{i}]/div/div/p"
-
-        # Collect keyword, title, href, date  match for titles
-        article_title = driver.find_element(By.XPATH, title_xpath).get_attribute("innerHTML")
-        article_href = driver.find_element(By.XPATH, title_xpath).get_attribute("href")
-        date = driver.find_element(By.XPATH, date_xpath).get_attribute("datetime")
-        summary = driver.find_element(By.XPATH, summary_xpath).get_attribute("innerHTML")
+        # Go back to search page
+        driver.back()
+        time.sleep(2)
 
         # Add to lists to use later
-        article_titles.append(article_title)
-        article_hrefs.append(article_href)
-        article_dates.append(date)
-        article_summaries.append(summary)
+        result_titles.append(result_href)
+        result_hrefs.append(result_href)
+        result_dates.append(date)
         keyword_list.append(keyword)
 
 
 # Create df with keyword-title-link for publications
 colnames = ["keyword", "title", "summary", "date", "href"]
-articles_df = pd.DataFrame(list(zip(keyword_list, article_titles, article_summaries, article_dates, article_hrefs)),
+results_df = pd.DataFrame(list(zip(keyword_list, result_titles, result_dates, result_hrefs)),
                             columns = colnames)
-articles_df.to_csv(articles_output_fpath)
+results_df.to_csv(results_output_fpath)
 
 
-
-# TODO Filter keywords to avoid ones producing too many outputs- e.g. " AI ", " ИИ " as found in simple words and search doesnt function as intended
-# for keyword in keywords:
-#     # Input keyword
-#     keyword_search_webel.click()
-#     keyword_search_webel.send_keys(keyword)
-#     # Search
-#     search_btn.click()
-
-#     time.sleep(3)
-
-
-# Visible articles
-# XPATH
-# href of an article (first) '/html/body/div[2]/div/div[2]/div/div[1]/div[1]/div/div[2]/h2/a'
-# //*[@id="news_list"]/div[1]/div/div[2]/h2/a
-# href of an article (second) '/html/body/div[2]/div/div[2]/div/div[1]/div[2]/div/div[2]/h2/a'
-# //*[@id="news_list"]/div[2]/div/div[2]/h2/a
-# href of an article (last)   '/html/body/div[2]/div/div[2]/div/div[1]/div[9]/div/div[2]/h2/a'
-# //*[@id="news_list"]/div[2]/div/div[9]/h2/a
-
-# href of grid with articles '/html/body/div[2]/div/div[2]/div/div[1]'
-# //*[@id="news_list"]
-
-time.sleep(3)
 driver.get_screenshot_as_file("screenshots/test.png")
-
 driver.quit()
 

@@ -25,7 +25,6 @@ bank = "ubb"
 bank_url = "https://www.ubb.bg/en/about/reports"
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
-articles_output_fpath = f"outputs/search_results_articles_{bank}.csv"
 # Download reports in separate folder wrt bank
 download_filepath = download_filepath + bank + "/"
 
