@@ -2,7 +2,7 @@
 import math
 import time
 import pandas as pd
-import os
+import re
 # Browser/HTML navigating pkgs and f-s
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -59,8 +59,10 @@ for i in range(0,len(keywords)):
     if i == 0:
         nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
     else:
-        nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[3]")
-        
+        nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[1]")
+        driver.execute_script("window.scrollTo(0,0)")
+    
+    time.sleep(3)
     nav_btn.click()
 
     time.sleep(2)
@@ -89,7 +91,9 @@ for i in range(0,len(keywords)):
     # Get number of hits
     n_results = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/p")
     n_results = n_results.get_attribute("innerHTML")
-    n_results = n_results[len(n_results)-1]
+    # Use regex to extract digits at end of string
+    n_results = re.search(r'\d+$', n_results)
+    n_results = n_results.group()
     n_results = int(n_results)
 
     if n_results == 0:
@@ -144,7 +148,7 @@ for i in range(0,len(keywords)):
 
 
 # Create df with keyword-title-link for publications
-colnames = ["keyword", "title", "summary", "date", "href"]
+colnames = ["keyword", "title", "date", "href"]
 results_df = pd.DataFrame(list(zip(keyword_list, result_titles, result_dates, result_hrefs)),
                             columns = colnames)
 results_df.to_csv(results_output_fpath)
