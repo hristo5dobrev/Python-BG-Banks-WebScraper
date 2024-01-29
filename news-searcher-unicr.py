@@ -163,18 +163,6 @@ articles_df = pd.DataFrame(list(zip(keyword_list, article_titles, article_summar
 articles_df.to_csv(articles_output_fpath)
 
 
-
-# TODO Filter keywords to avoid ones producing too many outputs- e.g. " AI ", " ИИ " as found in simple words and search doesnt function as intended
-# for keyword in keywords:
-#     # Input keyword
-#     keyword_search_webel.click()
-#     keyword_search_webel.send_keys(keyword)
-#     # Search
-#     search_btn.click()
-
-#     time.sleep(3)
-
-
 # Visible articles
 # XPATH
 # href of an article (first) '/html/body/div[2]/div/div[2]/div/div[1]/div[1]/div/div[2]/h2/a'

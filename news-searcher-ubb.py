@@ -86,7 +86,7 @@ for i in range(0,len(keywords)):
     search_btn.click()
 
     # Allow time for the search
-    time.sleep(7)
+    time.sleep(3)
 
     # Get number of hits
     n_results = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/p")
