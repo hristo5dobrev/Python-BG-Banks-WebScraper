@@ -11,7 +11,8 @@ from key_vars import download_filepath, parsed_files_fpath, keywords, pdf_links_
 
 # Bank specific var- Choose bank for which to search through pdf reports
 # bank = "unicredit"
-bank = "ubb"
+# bank = "ubb"
+bank = "fibank"
 
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
@@ -100,10 +101,14 @@ matches_new = pd.DataFrame(list(zip(document_names, document_links, matching_kwo
 
 
 # Add to recorded matches
-# TODO Check if file exists and create if not!
-records_fname = f"outputs/recorded_matches_{bank}.csv"
-matches_previous = pd.read_csv(records_fname)
-matches_full = pd.concat([matches_previous, matches_new], ignore_index=True)
+# TODO Check if file exists and write new if not!
+output_files_list = os.listdir("outputs/")
+if records_fname not in output_files_list:
+    matches_full = matches_new
+else:
+    matches_previous = pd.read_csv(records_fname)
+    matches_full = pd.concat([matches_previous, matches_new], ignore_index=True)
+# Save matches
 matches_full.to_csv(records_fname, index=False)
 
 # Add to parsed files to avoid re-doing

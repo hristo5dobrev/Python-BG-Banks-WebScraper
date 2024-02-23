@@ -6,14 +6,6 @@ keywords = ["artificial intelligence", " AI ", "big data", "cloud compute", "clo
             "изкуствен интелект", " ИИ ", "големи данни", "облачно изчисление", "облачни изчисления",
             "изчисления в облак", "блокчейн"]
 
-
-# Choose bank via (un)commenting
-
-# Fibank vars - NOT IMPLEMENTED
-# bank = "fibank"
-# bank_url = "https://www.fibank.bg/bg/za-nas/finansovi-otcheti"
-# bank_news_url = "https://www.unicreditbulbank.bg/bg/za-nas/media/novini/"
-
 # Set bounds for years to get reports for
 earliest_report_year = 2008
 final_report_year = datetime.datetime.now().year
