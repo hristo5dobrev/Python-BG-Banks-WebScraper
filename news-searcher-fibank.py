@@ -22,7 +22,7 @@ from key_vars import keywords, earliest_report_year, final_report_year
 
 # Bank specific vars
 bank = "fibank"
-bank_news_url = "https://www.unicreditbulbank.bg/bg/za-nas/media/novini/"
+bank_news_url = "https://www.fibank.bg/bg/za-nas/novini/novini"
 # Outputs fpaths
 results_output_fpath = f"outputs/search_results_{bank}.csv"
 
@@ -33,17 +33,13 @@ driver = webdriver.Chrome(options = set_chrome_options())
 driver.get(bank_news_url)
 time.sleep(3)
 
-# Decline cookies
-cookies_btn = driver.find_element(By.XPATH, "//*[@id='CybotCookiebotDialogBodyButtonDecline']")
-cookies_btn.click()
-time.sleep(1)
-
-#  Search in media publications with keywords
+#  Search keywords
 
 result_titles = []
 result_dates = []
 result_hrefs = []
 keyword_list = []
+result_summaries = []
 
 
 for i in range(0,len(keywords)):
@@ -53,44 +49,43 @@ for i in range(0,len(keywords)):
     # Log keyword being used
     print(f"Keyword -> {keyword}----------------------------------")
                                                 
-    # Open nav bar to enable search box
-    if i == 0:
-        nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
-    else:
-        nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[1]")
-        driver.execute_script("window.scrollTo(0,0)")
-    
-    time.sleep(3)
-    nav_btn.click()
-
+    # Open bar to enable search box
+    search_icon = driver.find_element(By.XPATH, "/html/body/div/header/div[1]/div/div[2]/ul/li[7]/a/i")
     time.sleep(2)
+    search_icon.click()
+    time.sleep(2)
+    # if i == 0:
+    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
+    # else:
+    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[1]")
+    #     driver.execute_script("window.scrollTo(0,0)")
 
-    # Identify webelements for searching (each loop to avoid stale state)
-    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='search-input']")
-    search_btn = driver.find_element(By.XPATH, "//*/button[@type='submit']/img")
-    #search_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[5]/div/div[2]/div/form/div/div/button/img")
-    
     # #//*[@id="id_keywords"]
     # if i == 0:
     #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/input")
     # else:
     #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/span/button")
     #     keyword_search_webel.clear()
+    
+
+    # Identify webelements for searching (each loop to avoid stale state)
+    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='header_search_id']")
+    #search_btn = driver.find_element(By.XPATH, "/html/body/div/header/div[2]/div/div[2]/div/form/button[2]")
 
     # Input keyword
     keyword_search_webel.click()
     keyword_search_webel.send_keys(keyword)
     # Search
-    search_btn.click()
+    keyword_search_webel.send_keys(Keys.RETURN)
 
     # Allow time for the search
     time.sleep(3)
 
     # Get number of hits
-    n_results = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/p")
+    n_results = driver.find_element(By.XPATH, "/html/body/div/main/section[1]/div/div[1]/div/div[2]/p")
     n_results = n_results.get_attribute("innerHTML")
     # Use regex to extract digits at end of string
-    n_results = re.search(r'\d+$', n_results)
+    n_results = re.search(r'\d+', n_results)
     n_results = n_results.group()
     n_results = int(n_results)
 
@@ -103,22 +98,21 @@ for i in range(0,len(keywords)):
     for i in range(1, n_results+1):
 
         # Set xpath to access result info accordingly
-        category_xpath = f"/html/body/div[3]/div[2]/div/div[2]/div/div/div[{i}]/a[1]"
-        title_xpath = f"/html/body/div[3]/div[2]/div/div[2]/div/div/div[{i}]/a[2]"
+        category_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/h3"
+        title_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/h2/a"
+        summary_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/p"
 
         # Locate webels
         category_webel = driver.find_element(By.XPATH, category_xpath)
         title_webel = driver.find_element(By.XPATH, title_xpath)
+        summary_webel = driver.find_element(By.XPATH, summary_xpath)
 
-        # Get title, category, href, date
+        # Get title, category, href, summary
         category = category_webel.get_attribute("innerHTML").lower()
         title = title_webel.get_attribute("innerHTML")
         result_href = title_webel.get_attribute("href")
+        summary = summary_webel.get_attribute("innerHTML")
         date = "NA"
-
-        # Exclude result if obviously wrong (Office Move Notif)
-        if "address change" in title:
-            continue
 
         # Check if link still live
         search_url = driver.current_url
@@ -132,7 +126,7 @@ for i in range(0,len(keywords)):
         
         # Get date of publishing (if news, else not available)
         if category == "news":
-            date = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div[2]/div/div/div[2]/p/span").get_attribute("innerHTML")
+            date = driver.find_element(By.XPATH, "/html/body/div/main/header/div/time").get_attribute("innerHTML")
 
         # Go back to search page
         driver.back()
@@ -142,12 +136,13 @@ for i in range(0,len(keywords)):
         result_titles.append(result_href)
         result_hrefs.append(result_href)
         result_dates.append(date)
+        result_summaries.append(summary)
         keyword_list.append(keyword)
 
 
 # Create df with keyword-title-link for publications
-colnames = ["keyword", "title", "date", "href"]
-results_df = pd.DataFrame(list(zip(keyword_list, result_titles, result_dates, result_hrefs)),
+colnames = ["keyword", "title", "summary", "date", "href"]
+results_df = pd.DataFrame(list(zip(keyword_list, result_titles, result_summaries, result_dates, result_hrefs)),
                             columns = colnames)
 results_df.to_csv(results_output_fpath)
 
