@@ -12,7 +12,8 @@ from key_vars import download_filepath, parsed_files_fpath, keywords, pdf_links_
 # Bank specific var- Choose bank for which to search through pdf reports
 # bank = "unicredit"
 # bank = "ubb"
-bank = "fibank"
+# bank = "fibank"
+bank = "postbank"
 
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"

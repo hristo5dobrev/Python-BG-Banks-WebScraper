@@ -2,9 +2,9 @@ import datetime
 
 
 # Keywords to search for
-keywords = ["artificial intelligence", " AI ", "big data", "cloud compute", "cloud computing", "blockchain",
+keywords = ["artificial intelligence", " AI ", "big data", "cloud compute", "cloud computing", "blockchain", "fintech",
             "изкуствен интелект", " ИИ ", "големи данни", "облачно изчисление", "облачни изчисления",
-            "изчисления в облак", "блокчейн"]
+            "изчисления в облак", "блокчейн", "финтех"]
 
 # Set bounds for years to get reports for
 earliest_report_year = 2008
