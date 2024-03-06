@@ -54,18 +54,6 @@ for i in range(0,len(keywords)):
     time.sleep(2)
     search_icon.click()
     time.sleep(2)
-    # if i == 0:
-    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
-    # else:
-    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[1]")
-    #     driver.execute_script("window.scrollTo(0,0)")
-
-    # #//*[@id="id_keywords"]
-    # if i == 0:
-    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/input")
-    # else:
-    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/span/button")
-    #     keyword_search_webel.clear()
     
 
     # Identify webelements for searching (each loop to avoid stale state)
@@ -133,7 +121,7 @@ for i in range(0,len(keywords)):
         time.sleep(2)
 
         # Add to lists to use later
-        result_titles.append(result_href)
+        result_titles.append(title)
         result_hrefs.append(result_href)
         result_dates.append(date)
         result_summaries.append(summary)

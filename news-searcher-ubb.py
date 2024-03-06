@@ -141,7 +141,7 @@ for i in range(0,len(keywords)):
         time.sleep(2)
 
         # Add to lists to use later
-        result_titles.append(result_href)
+        result_titles.append(title)
         result_hrefs.append(result_href)
         result_dates.append(date)
         keyword_list.append(keyword)

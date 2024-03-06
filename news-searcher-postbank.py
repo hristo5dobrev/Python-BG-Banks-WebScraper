@@ -22,7 +22,7 @@ from key_vars import keywords, earliest_report_year, final_report_year
 
 # Bank specific vars
 bank = "postbank"
-bank_news_url = "https://mediacenter.postbank.bg/category/news/"
+bank_media_url = "https://mediacenter.postbank.bg"
 # Outputs fpaths
 results_output_fpath = f"outputs/search_results_{bank}.csv"
 
@@ -30,7 +30,7 @@ results_output_fpath = f"outputs/search_results_{bank}.csv"
 driver = webdriver.Chrome(options = set_chrome_options())
 
 # Navigate to news page
-driver.get(bank_news_url)
+driver.get(bank_media_url)
 time.sleep(3)
 
 #  Search keywords
@@ -49,11 +49,11 @@ for i in range(0,len(keywords)):
     # Log keyword being used
     print(f"Keyword -> {keyword}----------------------------------")
                                                 
-    # Open bar to enable search box
-    search_icon = driver.find_element(By.XPATH, "/html/body/div/header/div[1]/div/div[2]/ul/li[7]/a/i")
-    time.sleep(2)
-    search_icon.click()
-    time.sleep(2)
+    # # Open bar to enable search box
+    # search_icon = driver.find_element(By.XPATH, "/html/body/div/header/div[1]/div/div[2]/ul/li[7]/a/i")
+    # time.sleep(2)
+    # search_icon.click()
+    # time.sleep(2)
     # if i == 0:
     #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
     # else:
@@ -69,75 +69,96 @@ for i in range(0,len(keywords)):
     
 
     # Identify webelements for searching (each loop to avoid stale state)
-    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='header_search_id']")
-    #search_btn = driver.find_element(By.XPATH, "/html/body/div/header/div[2]/div/div[2]/div/form/button[2]")
+    keyword_search_webel = driver.find_element(By.XPATH, "//*[@id='s']")
+    search_submit = driver.find_element(By.XPATH, "//*[@id='searchsubmit']")
 
     # Input keyword
     keyword_search_webel.click()
     keyword_search_webel.send_keys(keyword)
     # Search
-    keyword_search_webel.send_keys(Keys.RETURN)
+    search_submit.click()
 
     # Allow time for the search
     time.sleep(3)
 
     # Get number of hits
-    n_results = driver.find_element(By.XPATH, "/html/body/div/main/section[1]/div/div[1]/div/div[2]/p")
-    n_results = n_results.get_attribute("innerHTML")
-    # Use regex to extract digits at end of string
-    n_results = re.search(r'\d+', n_results)
-    n_results = n_results.group()
-    n_results = int(n_results)
 
-    if n_results == 0:
+    # Get pagination data
+    n_results_pages_raw = driver.find_elements(By.CLASS_NAME, "wp-paginate")
+    # Get number of results on page
+    # Assume results per page wrt first page (apart fromn last page)
+    results_first_page = driver.find_elements(By.CLASS_NAME, "news")
+    results_first_page = len(results_first_page)
+
+    # Determine number of pages
+    # Pagination webel shows only for 2+ pages
+    if len(n_results_pages_raw) > 0:
+        # Parse innerHTML to get number of pages
+        result_pages_html_content = n_results_pages_raw[0].get_attribute('innerHTML')
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(result_pages_html_content, 'html.parser')
+        # Find all li elements
+        li_elements = soup.find_all('li')
+        # Subtract 2 as there is a title element (i.e. empty) and next page element
+        n_results_pages = len(li_elements) - 2
+    elif len(n_results_pages_raw) == 0 and results_first_page > 0:
+        n_results_pages = 1
+    else:
+        n_results_pages = 0 
+
+    # If no hits found list is empty- continue
+    if n_results_pages == 0 and results_first_page == 0:
         continue
 
-    print(f"Number of search results found -> {n_results}----------------------------------")
+    print(f"Number of search results found -> Up To {n_results_pages}pages * {results_first_page}results----------------------------------")
+
+    # Loop pages
+    for page_i in range(1, n_results_pages+1):
+
+        if page_i > 1:
+            # Go to next page
+            next_btn = driver.find_element(By.CLASS_NAME, "next")
+            next_btn.click()
+            # Get results on page
+            results_on_page = driver.find_elements(By.CLASS_NAME, "news")
+            results_on_page = len(results_on_page)
+        elif page_i == 1:
+            results_on_page = results_first_page
 
 
-    for i in range(1, n_results+1):
+        # Loop results
+        for i in range(1, results_on_page+1):
 
-        # Set xpath to access result info accordingly
-        category_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/h3"
-        title_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/h2/a"
-        summary_xpath = f"/html/body/div/main/section[1]/div/div[2]/ul/li[{i}]/div[1]/p"
+            # Set xpath to access result info accordingly
+            title_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/h2/a"
+            summary_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/p"
+            date_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/div/div[1]"
 
-        # Locate webels
-        category_webel = driver.find_element(By.XPATH, category_xpath)
-        title_webel = driver.find_element(By.XPATH, title_xpath)
-        summary_webel = driver.find_element(By.XPATH, summary_xpath)
+            # Handle summary website hiccup
+            summary_test = driver.find_elements(By.XPATH, summary_xpath)
+            if len(summary_test) == 0:
+                summary_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]"
+                summary_webel = driver.find_element(By.XPATH, summary_xpath)
+                summary = summary_webel.text
+            else:
+                summary_webel = driver.find_element(By.XPATH, summary_xpath)
+                summary = summary_webel.get_attribute("innerHTML")
 
-        # Get title, category, href, summary
-        category = category_webel.get_attribute("innerHTML").lower()
-        title = title_webel.get_attribute("innerHTML")
-        result_href = title_webel.get_attribute("href")
-        summary = summary_webel.get_attribute("innerHTML")
-        date = "NA"
+            # Locate remaining webels
+            title_webel = driver.find_element(By.XPATH, title_xpath)
+            date_webel = driver.find_element(By.XPATH, date_xpath)
 
-        # Check if link still live
-        search_url = driver.current_url
-        title_webel.click()
-        time.sleep(3)
-        current_url = driver.current_url
+            # Get title, category, href
+            title = title_webel.get_attribute("innerHTML")
+            result_href = title_webel.get_attribute("href")
+            date = date_webel.get_attribute("innerHTML")
 
-        # If no change in URL skip result as no longer available
-        if current_url == search_url:
-            continue
-        
-        # Get date of publishing (if news, else not available)
-        if category == "news":
-            date = driver.find_element(By.XPATH, "/html/body/div/main/header/div/time").get_attribute("innerHTML")
-
-        # Go back to search page
-        driver.back()
-        time.sleep(2)
-
-        # Add to lists to use later
-        result_titles.append(result_href)
-        result_hrefs.append(result_href)
-        result_dates.append(date)
-        result_summaries.append(summary)
-        keyword_list.append(keyword)
+            # Add to lists to use later
+            result_titles.append(title)
+            result_hrefs.append(result_href)
+            result_dates.append(date)
+            result_summaries.append(summary)
+            keyword_list.append(keyword)
 
 
 # Create df with keyword-title-link for publications

@@ -33,7 +33,7 @@ driver = webdriver.Chrome(options=set_chrome_options())
 
 print("Scraping UBB reports")
 
-# Go to unicredit homepage
+# Go to starting page
 driver.get(bank_url)
 time.sleep(3)
 # Screenshot homepage to track progress
