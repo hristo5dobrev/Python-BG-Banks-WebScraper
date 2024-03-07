@@ -48,24 +48,6 @@ for i in range(0,len(keywords)):
 
     # Log keyword being used
     print(f"Keyword -> {keyword}----------------------------------")
-                                                
-    # # Open bar to enable search box
-    # search_icon = driver.find_element(By.XPATH, "/html/body/div/header/div[1]/div/div[2]/ul/li[7]/a/i")
-    # time.sleep(2)
-    # search_icon.click()
-    # time.sleep(2)
-    # if i == 0:
-    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[2]/div[1]/div/div/div[2]/div/div[1]")
-    # else:
-    #     nav_btn = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div/div[2]/div/div[1]")
-    #     driver.execute_script("window.scrollTo(0,0)")
-
-    # #//*[@id="id_keywords"]
-    # if i == 0:
-    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/input")
-    # else:
-    #     search_btn = driver.find_element(By.XPATH, "//*[@id='news-search-form']/span/button")
-    #     keyword_search_webel.clear()
     
 
     # Identify webelements for searching (each loop to avoid stale state)
@@ -74,6 +56,9 @@ for i in range(0,len(keywords)):
 
     # Input keyword
     keyword_search_webel.click()
+    if i > 0:
+        keyword_search_webel.clear()
+        time.sleep(2)
     keyword_search_webel.send_keys(keyword)
     # Search
     search_submit.click()
@@ -119,6 +104,8 @@ for i in range(0,len(keywords)):
             # Go to next page
             next_btn = driver.find_element(By.CLASS_NAME, "next")
             next_btn.click()
+            time.sleep(3)
+
             # Get results on page
             results_on_page = driver.find_elements(By.CLASS_NAME, "news")
             results_on_page = len(results_on_page)
@@ -129,29 +116,56 @@ for i in range(0,len(keywords)):
         # Loop results
         for i in range(1, results_on_page+1):
 
-            # Set xpath to access result info accordingly
+            # Set default xpath to access result info accordingly
             title_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/h2/a"
             summary_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/p"
             date_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]/div/div[1]"
 
-            # Handle summary website hiccup
+            # Handle special cases
             summary_test = driver.find_elements(By.XPATH, summary_xpath)
-            if len(summary_test) == 0:
+            title_test = driver.find_elements(By.XPATH, title_xpath)
+
+            
+            if len(title_test) == 0:
+                # Get summary
+                summary_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div"
+                summary_webel = driver.find_element(By.XPATH, summary_xpath)
+                summary = summary_webel.text
+                # No title available
+                title = "NA"
+                # Get href
+                href_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div/div/div[2]/a"
+                href_webel = driver.find_element(By.XPATH, href_xpath)
+                result_href = href_webel.get_attribute("href")
+                # Get date
+                date_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div/div/div[1]"
+                date_webel = driver.find_element(By.XPATH, date_xpath)
+                date = date_webel.get_attribute("innerHTML")
+
+            elif len(summary_test) == 0 and len(title_test) != 0:
+                # Handle summary
                 summary_xpath = f"//*[@id='searchbar']/div[1]/div[{i}]/div[2]"
                 summary_webel = driver.find_element(By.XPATH, summary_xpath)
                 summary = summary_webel.text
+
+                # Handle other info- title, href, date
+                title_webel = driver.find_element(By.XPATH, title_xpath)
+                date_webel = driver.find_element(By.XPATH, date_xpath)
+                title = title_webel.get_attribute("innerHTML")
+                result_href = title_webel.get_attribute("href")
+                date = date_webel.get_attribute("innerHTML")
+
             else:
+                # Find webelements
                 summary_webel = driver.find_element(By.XPATH, summary_xpath)
+                title_webel = driver.find_element(By.XPATH, title_xpath)
+                date_webel = driver.find_element(By.XPATH, date_xpath)
+                # Get values
+                title = title_webel.get_attribute("innerHTML")
+                result_href = title_webel.get_attribute("href")
                 summary = summary_webel.get_attribute("innerHTML")
-
-            # Locate remaining webels
-            title_webel = driver.find_element(By.XPATH, title_xpath)
-            date_webel = driver.find_element(By.XPATH, date_xpath)
-
-            # Get title, category, href
-            title = title_webel.get_attribute("innerHTML")
-            result_href = title_webel.get_attribute("href")
-            date = date_webel.get_attribute("innerHTML")
+                date = date_webel.get_attribute("innerHTML")
+            
 
             # Add to lists to use later
             result_titles.append(title)
