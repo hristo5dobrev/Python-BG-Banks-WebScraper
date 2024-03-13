@@ -55,13 +55,6 @@ pdf_file_names = []
 # Note already downloaded files to avoid duplicates
 downloaded_files = os.listdir(download_filepath)
 
-# for reporting_year_i in range(earliest_report_year, final_report_year+1):
-#     # Print out year being processed
-#     print(f"Parsing Year ---> {reporting_year_i}")
-
-#     # Show reports for given year
-#     year_tab = driver.find_element(By.XPATH, f"//*[@id='block_201-zzzz']//*[@data-category-id='{reporting_year_i}-1' and @title='{reporting_year_i}']")
-
 
 # Download all pdf reports for each year in specified range
 
