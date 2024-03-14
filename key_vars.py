@@ -3,7 +3,7 @@ import datetime
 
 # Keywords to search for
 keywords = ["artificial intelligence", " AI ", "big data", "cloud compute", "cloud computing",
-             "blockchain", "fintech", "machine learning", "robotization", "innovation"
+             "blockchain", "fintech", "machine learning", "robotization", "innovation",
             "изкуствен интелект", " ИИ ", "големи данни", "облачно изчисление", "облачни изчисления",
             "изчисления в облак", "блокчейн", "финтех", "машинно обучение", "роботизация", "иновация", "иновации"]
 
