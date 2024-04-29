@@ -15,7 +15,8 @@ from key_vars import download_filepath, parsed_files_fpath, keywords, pdf_links_
 # bank = "fibank"
 # bank = "postbank"
 # bank = "ccb"
-bank = "allianz"
+# bank = "allianz"
+bank = "dsk"
 
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
