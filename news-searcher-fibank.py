@@ -72,7 +72,6 @@ for i in range(0,len(keywords)):
     # Get number of hits
     n_results = driver.find_element(By.XPATH, "/html/body/div/main/section[1]/div/div[1]/div/div[2]/p")
     n_results = n_results.get_attribute("innerHTML")
-    # Use regex to extract digits at end of string
     n_results = re.search(r'\d+', n_results)
     n_results = n_results.group()
     n_results = int(n_results)
