@@ -16,7 +16,8 @@ from key_vars import download_filepath, parsed_files_fpath, keywords, pdf_links_
 # bank = "postbank"
 # bank = "ccb"
 # bank = "allianz"
-bank = "dsk"
+# bank = "dsk"
+bank = "raiffeisen"
 
 # Outputs fpaths
 records_fname = f"outputs/recorded_matches_{bank}.csv"
@@ -34,9 +35,12 @@ todo_files = [filename for filename in files if filename not in parsed_files["fi
 # Identify corresponding links to files to process
 todo_files_links = []
 for i in range(0, len(todo_files)):
-    filename = todo_files[i]
-    file_link = files_links[files_links["filename"]==filename].reset_index(drop = True).loc[0]["href"]
-    todo_files_links.append(file_link)
+    if bank != "raiffeisen":
+        filename = todo_files[i]
+        file_link = files_links[files_links["filename"]==filename].reset_index(drop = True).loc[0]["href"]
+        todo_files_links.append(file_link)
+    else:
+        todo_files_links.append("NA")
 
 # Empty lists to store match info
 matching_pages = []
