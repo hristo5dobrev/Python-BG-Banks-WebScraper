@@ -18,8 +18,6 @@ from supporting_functions import set_chrome_options
 from key_vars import keywords, earliest_report_year, final_report_year
 
 
-# News/Publications Search- UBB
-
 # Bank specific vars
 bank = "ubb"
 # NOTE- we will use search box in website's menu for efficiency as no keyword searchbox for news only

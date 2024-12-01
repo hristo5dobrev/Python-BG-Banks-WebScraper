@@ -19,8 +19,6 @@ from supporting_functions import set_chrome_options
 from key_vars import download_filepath, earliest_report_year, final_report_year, pdf_links_fpath
 
 
-# Scrape- Unicredit Bulbank
-
 # Bank specific vars
 bank = "fibank"
 bank_url = "https://www.fibank.bg/bg/za-nas/finansovi-otcheti"
